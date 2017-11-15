@@ -449,7 +449,7 @@ class Service
 
     # Fill metadata
     meta_id = entry.xpath("./atom:id", @ds_namespaces)[0].content
-    klass.send :__metadata=, { :uri => meta_id }
+    klass.send :__metadata=, { :uri => URI(URI.encode(meta_id)) }
 
     # Fill properties
     for prop in properties
@@ -604,7 +604,8 @@ class Service
       return build_classes_from_result(post_result.body)
     elsif operation.kind == "Update"
       update_uri = build_resource_uri(operation)
-      json_klass = operation.klass.to_json
+      update_uri.query='$format=json'
+      json_klass = operation.klass.to_json(type: :add)
       update_result = OData::Resource.new(update_uri, @rest_options).put json_klass, {:content_type => @json_type}
       return (update_result.status == 204)
     elsif operation.kind == "Delete"
