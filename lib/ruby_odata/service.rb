@@ -536,7 +536,7 @@ class Service
     "#{@uri}#{@query.query}"
   end
   def build_save_uri(operation)
-    uri = "#{@uri}/#{operation.klass_name}"
+    uri = "#{@uri}/#{URI.encode(operation.klass_name)}"
     uri << "?#{@additional_params.to_query}" unless @additional_params.empty?
     uri
   end
