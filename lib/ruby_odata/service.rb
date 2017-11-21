@@ -599,6 +599,7 @@ class Service
   def single_save(operation)
     if operation.kind == "Add"
       save_uri = build_save_uri(operation)
+      save_uri.query='$format=json'
       json_klass = operation.klass.to_json(:type => :add)
       post_result = OData::Resource.new(save_uri, @rest_options).post json_klass, {:content_type => @json_type}
       return build_classes_from_result(post_result.body)
