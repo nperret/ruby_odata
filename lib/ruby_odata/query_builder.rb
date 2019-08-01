@@ -50,7 +50,7 @@ module OData
     #  svc.Products.filter("Name eq 'Product 2'")
     #  products = svc.execute
     def filter(filter)
-      @filters << CGI.escape(filter)
+      @filters << URI.encode(filter)
       self
     end
 
@@ -62,7 +62,8 @@ module OData
     #   svc.Products.order_by("Name")
     #   products = svc.execute
     def order_by(order_by)
-      @order_bys << CGI.escape(order_by)
+      # 1C does not like '+' in queries like "Date desc"
+      @order_bys << URI.encode(order_by)
       self
     end
 
