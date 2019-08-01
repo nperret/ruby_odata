@@ -1,4 +1,12 @@
 module OData
+  module DoNotEncoder
+    def self.encode(params)
+      Faraday::FlatParamsEncoder.encode(params).tr('+', ' ')
+    end
+    def self.decode(params)
+      Faraday::FlatParamsEncoder.decode params
+    end
+  end
   class Resource
     attr_reader :url, :options, :block
 
@@ -14,6 +22,7 @@ module OData
 
         faraday.options.timeout      = timeout if timeout
         faraday.options.open_timeout = open_timeout if open_timeout
+        faraday.options.params_encoder = DoNotEncoder
         faraday.response :logger, ::Logger.new(STDOUT) if @options[:debug]
 
         faraday.headers = (faraday.headers || {}).merge(@options[:headers] || {})

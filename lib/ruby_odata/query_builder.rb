@@ -62,7 +62,6 @@ module OData
     #   svc.Products.order_by("Name")
     #   products = svc.execute
     def order_by(order_by)
-      # 1C does not like '+' in queries like "Date desc"
       @order_bys << URI.encode(order_by)
       self
     end
