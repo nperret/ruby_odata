@@ -14,6 +14,7 @@ module OData
 
         faraday.options.timeout      = timeout if timeout
         faraday.options.open_timeout = open_timeout if open_timeout
+        faraday.response :logger, ::Logger.new(STDOUT) if @options[:debug]
 
         faraday.headers = (faraday.headers || {}).merge(@options[:headers] || {})
         faraday.headers = (faraday.headers).merge({
