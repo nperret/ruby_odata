@@ -376,6 +376,29 @@ class Service
   def handle_exception(e)
     raise e unless defined?(e.response) && e.response != nil
 
+    content_type = e.response[:headers]['Content-Type'] || ''
+
+    if content_type.include? 'json'
+      handle_json_exception(e)
+    elsif content_type.include? 'xml'
+      handle_xml_exception(e)
+    else
+      raise "Unkown content_type #{content_type} in #{e}"
+    end
+  end
+
+  def handle_json_exception(e)
+    code = e.response[:status]
+
+    # {"odata.error"=>{"code"=>"4", "message"=>{"lang"=>"ru", "value"=>"LineNumber"}}}
+    error = JSON.parse(e.response[:body])
+
+    message = error.dig('odata.error')
+    message = "Server returned error but no message #{error}." if message.blank?
+    raise ServiceError.new(code), message
+  end
+
+  def handle_xml_exception(e)
     code = e.response[:status]
     error = Nokogiri::XML(e.response[:body])
 
