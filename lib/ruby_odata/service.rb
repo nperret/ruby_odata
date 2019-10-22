@@ -435,21 +435,28 @@ class Service
   end
 
   # Helper to loop through a result and create an instance for each entity in the results
-  def build_classes_from_result(result)
-    doc = Nokogiri::XML(result)
+  def build_classes_from_result(result, format: :xml)
+    case format
+    when :xml
+      doc = Nokogiri::XML(result)
 
-    is_links = doc.at_xpath("/ds:links", @ds_namespaces)
-    return parse_link_results(doc) if is_links
+      is_links = doc.at_xpath("/ds:links", @ds_namespaces)
+      return parse_link_results(doc) if is_links
 
-    entries = doc.xpath("//atom:entry[not(ancestor::atom:entry)]", @ds_namespaces)
+      entries = doc.xpath("//atom:entry[not(ancestor::atom:entry)]", @ds_namespaces)
 
-    extract_partial(doc)
+      extract_partial(doc)
 
-    results = []
-    entries.each do |entry|
-      results << entry_to_class(entry)
+      results = []
+      entries.each do |entry|
+        results << entry_to_class(entry)
+      end
+      return results
+    when :json
+      raise 'not implemented'
+    else
+      raise "Unknown format #{json}"
     end
-    return results
   end
 
   # Converts an XML Entry into a class
@@ -625,7 +632,8 @@ class Service
       save_uri << '?$format=json'
       json_klass = operation.klass.to_json(:type => :add)
       post_result = OData::Resource.new(save_uri, @rest_options).post json_klass, {:content_type => @json_type}
-      return build_classes_from_result(post_result.body)
+      return JSON.parse(post_result.body)
+      # return build_classes_from_result(post_result.body, format: :json)
     elsif operation.kind == "Update"
       update_uri = build_resource_uri(operation)
       update_uri.query='$format=json'
