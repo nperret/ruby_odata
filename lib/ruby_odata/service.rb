@@ -438,7 +438,7 @@ class Service
   def build_classes_from_result(result, format: :xml)
     case format
     when :xml
-      doc = Nokogiri::XML(result)
+      doc = result.is_a?(Nokogiri::XML::Document) ? result : Nokogiri::XML(result)
 
       is_links = doc.at_xpath("/ds:links", @ds_namespaces)
       return parse_link_results(doc) if is_links
