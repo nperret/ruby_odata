@@ -475,7 +475,8 @@ class Service
 
     properties = entry.xpath("./atom:content/m:properties/*", @ds_namespaces)
 
-    klass = @classes[qualify_class_name(klass_name)].new
+    klass = @classes[qualify_class_name(klass_name)] || raise("No class #{klass_name}")
+    klass = klass.new
 
     # Fill metadata
     meta_id = entry.xpath("./atom:id", @ds_namespaces)[0].content
