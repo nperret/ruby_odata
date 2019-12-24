@@ -18,7 +18,8 @@ module OData
       @conn = Faraday.new(url: url, ssl: { verify: verify_ssl }) do |faraday|
         faraday.use      :gzip
         faraday.response :raise_error
-        faraday.adapter  :excon
+        # faraday.adapter  :excon
+        faraday.adapter  :net_http
 
         faraday.options.timeout      = timeout if timeout
         faraday.options.open_timeout = open_timeout if open_timeout

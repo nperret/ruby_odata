@@ -70,14 +70,14 @@ class Service
   end
 
   # Performs save operations (Create/Update/Delete) against the server
-  def save_changes
+  def save_changes(additional_headers={})
     return nil if @save_operations.empty?
 
     result = nil
 
     begin
       if @save_operations.length == 1
-        result = single_save(@save_operations[0])
+        result = single_save(@save_operations[0], additional_headers)
       else
         result = batch_save(@save_operations)
       end
@@ -627,28 +627,28 @@ class Service
     operation.child_klass.send("#{child_property_to_set}=", operation.klass)
   end
 
-  def single_save(operation)
+  def single_save(operation, additional_headers = {})
     if operation.kind == "Add"
       save_uri = build_save_uri(operation)
       save_uri << '?$format=json'
       json_klass = operation.klass.to_json(:type => :add)
-      post_result = OData::Resource.new(save_uri, @rest_options).post json_klass, {:content_type => @json_type}
+      post_result = OData::Resource.new(save_uri, @rest_options).post json_klass, {:content_type => @json_type}.merge(additional_headers)
       return JSON.parse(post_result.body)
       # return build_classes_from_result(post_result.body, format: :json)
     elsif operation.kind == "Update"
       update_uri = build_resource_uri(operation)
       update_uri.query='$format=json'
       json_klass = operation.klass.to_json(type: :add)
-      update_result = OData::Resource.new(update_uri, @rest_options).put json_klass, {:content_type => @json_type}
+      update_result = OData::Resource.new(update_uri, @rest_options).put json_klass, {:content_type => @json_type}.merge(additional_headers)
       return (update_result.status == 204)
     elsif operation.kind == "Delete"
       delete_uri = build_resource_uri(operation)
-      delete_result = OData::Resource.new(delete_uri, @rest_options).delete
+      delete_result = OData::Resource.new(delete_uri, @rest_options).delete additional_headers
       return (delete_result.status == 204)
     elsif operation.kind == "AddLink"
       save_uri = build_add_link_uri(operation)
       json_klass = operation.child_klass.to_json(:type => :link)
-      post_result = OData::Resource.new(save_uri, @rest_options).post json_klass, {:content_type => @json_type}
+      post_result = OData::Resource.new(save_uri, @rest_options).post json_klass, {:content_type => @json_type}.merge(additional_headers)
 
       # Attach the child to the parent
       link_child_to_parent(operation) if (post_result.status == 204)
