@@ -156,6 +156,11 @@ module OData
     end
 
     def prepare_payload payload
+      # Если передаешь строку в JSON.generate
+      # json 1.8.6 - JSON::GeneratorError
+      # json 2.3.0 - молча ескейпит строку
+      return payload if payload.is_a?(String)
+
       JSON.generate(payload)
     rescue JSON::GeneratorError
       payload
